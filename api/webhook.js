@@ -1,8 +1,8 @@
 import axios from 'axios';
 import getRawBody from 'raw-body';
 
-const SHOP = process.env.SHOP;
-const ADMIN_API_TOKEN = process.env.ADMIN_API_TOKEN;
+const SHOP_DOMAIN_DOMAIN = process.env.SHOP_DOMAIN_DOMAIN;
+const SHOPIFY_ACCESS_TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 const PRODUCT_ID = process.env.PRODUCT_ID;
 const MAX_LIMIT = 2;
 
@@ -25,8 +25,8 @@ export default async function handler(req, res) {
     const restrictedItem = lineItems.find(item => item.product_id == PRODUCT_ID);
     if (!restrictedItem) return res.status(200).send('No restricted item in order.');
 
-    const response = await axios.get(`https://${SHOP}/admin/api/2024-04/orders.json`, {
-      headers: { 'X-Shopify-Access-Token': ADMIN_API_TOKEN },
+    const response = await axios.get(`https://${SHOP_DOMAIN}/admin/api/2024-04/orders.json`, {
+      headers: { 'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN },
       params: {
         status: 'any',
         fields: 'line_items,shipping_address',
@@ -51,13 +51,13 @@ export default async function handler(req, res) {
     });
 
     if (totalQuantity > MAX_LIMIT) {
-      await axios.post(`https://${SHOP}/admin/api/2024-04/orders/${order.id}/cancel.json`, {
+      await axios.post(`https://${SHOP_DOMAIN}/admin/api/2024-04/orders/${order.id}/cancel.json`, {
         reason: "other",
         email: true,
         restock: true
       }, {
         headers: {
-          'X-Shopify-Access-Token': ADMIN_API_TOKEN,
+          'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN,
           'Content-Type': 'application/json'
         }
       });
