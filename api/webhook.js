@@ -1,17 +1,20 @@
-import express from 'express';
 import axios from 'axios';
 import getRawBody from 'raw-body';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Replace these with your real values
-const SHOP = 'your-store.myshopify.com'; // no https://
-const ADMIN_API_TOKEN = 'shpat_XXXXXXXXXXXXXXXXXXXXXXXX';
-const PRODUCT_ID = '1234567890'; // Target product
+const SHOP = process.env.SHOP;
+const ADMIN_API_TOKEN = process.env.ADMIN_API_TOKEN;
+const PRODUCT_ID = process.env.PRODUCT_ID;
 const MAX_LIMIT = 2;
 
-app.post('/webhook/orders-create', async (req, res) => {
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+
   const body = await getRawBody(req);
   const order = JSON.parse(body.toString());
 
@@ -59,16 +62,12 @@ app.post('/webhook/orders-create', async (req, res) => {
         }
       });
 
-      console.log(`Canceled order ${order.id} for exceeding limit.`);
+      console.log(`Order ${order.id} canceled for exceeding limit.`);
     }
 
-    res.status(200).send('Webhook processed');
+    res.status(200).send('Processed');
   } catch (error) {
     console.error('Webhook error:', error.message);
     res.status(500).send('Internal Error');
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Webhook listening on port ${PORT}`);
-});
+}
